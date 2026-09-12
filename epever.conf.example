@@ -1,0 +1,5 @@
+[epever]
+port = /dev/ttyUSB0
+slave = 1
+poll_interval = 2
+baudrate = 115200

@@ -1,5 +1,6 @@
 import struct
 import sys
+import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / 'driver'))
@@ -11,18 +12,21 @@ def response(slave, values, function=3):
     return body + struct.pack('<H', crc16(body))
 
 
-def test_crc_known_request():
-    frame = build_read_holding(1, 0x3100, 2)
-    assert frame.hex() == '010331000002caf7'
+class TestModbus(unittest.TestCase):
+    def test_crc_known_request(self):
+        frame = build_read_holding(1, 0x3100, 2)
+        self.assertEqual(frame.hex(), '010331000002caf7')
+
+    def test_response_parse(self):
+        values = parse_read_holding(response(1, [1234, 5678]), 1, 2)
+        self.assertEqual(values, [1234, 5678])
+
+    def test_status_decode(self):
+        self.assertEqual(EpeverTracer.decode_charging_state(0x00), 0)
+        self.assertEqual(EpeverTracer.decode_charging_state(0x04), 5)
+        self.assertEqual(EpeverTracer.decode_charging_state(0x08), 3)
+        self.assertEqual(EpeverTracer.decode_charging_state(0x0C), 7)
 
 
-def test_response_parse():
-    values = parse_read_holding(response(1, [1234, 5678]), 1, 2)
-    assert values == [1234, 5678]
-
-
-def test_status_decode():
-    assert EpeverTracer.decode_charging_state(0x00) == 0
-    assert EpeverTracer.decode_charging_state(0x04) == 5
-    assert EpeverTracer.decode_charging_state(0x08) == 3
-    assert EpeverTracer.decode_charging_state(0x0C) == 7
+if __name__ == '__main__':
+    unittest.main()

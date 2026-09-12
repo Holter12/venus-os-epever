@@ -1,21 +1,29 @@
 # Implementation status
 
-## Current
+## Current release target: hardware-test build
 
-- Repository created and initial driver architecture committed.
-- Modbus RTU framing, CRC16 and realtime register decoding are implemented.
-- Venus OS solar-charger D-Bus abstraction is present.
-- Service wrapper and configuration example are present.
+- Modbus RTU framing and CRC16 implemented.
+- Tracer AN realtime block implemented.
+- Status registers 0x3200/0x3201 implemented.
+- Generated-energy counters 0x330C-0x3313 implemented.
+- Venus OS `VeDbusService` solar-charger publisher implemented.
+- Standard solar-charger paths such as `/Pv/V`, `/Pv/0/P`, `/Yield/Power`, `/Yield/User`, `/Dc/0/*`, `/State` and `/ErrorCode` are exported.
+- Persistent runit service and `/data/rc.local` bootstrap are included.
+- Standalone hardware diagnostic is included.
+- Offline Modbus protocol tests are included.
 
-## Not yet claimed as production-ready
+## Hardware validation still required
 
-The current commit is **not yet a complete hardware-validated Venus OS package**. In particular, the following must be completed and tested on an actual Cerbo GX running Venus OS:
+The code has not been executed against a physical Cerbo GX + Tracer 2210AN in this environment. The first hardware test should therefore be read-only diagnostics, followed by D-Bus/GUI validation.
 
-1. Bind the D-Bus paths to the exact Venus OS `dbus.service` / `VeDbusService` API used by the target Venus OS release.
-2. Validate the exact Tracer 2210AN register map and scaling against the controller firmware.
-3. Validate device discovery, GUI presentation, device instance and VRM logging.
-4. Add Venus OS service installation using the supported runit layout.
-5. Add history/yield paths and state/error mapping where supported by the controller.
-6. Test reconnect behaviour after USB/RS485 removal and controller power cycling.
+Specifically validate:
 
-The repository intentionally does not pretend these hardware-dependent checks have already passed.
+1. USB-RS485 adapter enumeration and driver support on the target Venus OS release.
+2. EPEVER baud rate/address and A/B polarity.
+3. Exact 2210AN register response/scaling.
+4. D-Bus service discovery and GX GUI presentation.
+5. VRM logging/history behaviour.
+6. Reconnect after serial disconnect and controller power cycle.
+7. Behaviour across a Venus OS firmware update.
+
+No Modbus write/control operations are implemented. This is deliberate for the first hardware-validation phase.

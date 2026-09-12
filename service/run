@@ -1,0 +1,5 @@
+#!/bin/sh
+exec 2>&1
+cd /data/venus-os-epever/driver
+export PYTHONPATH=/data/venus-os-epever/driver
+exec /usr/bin/python3 /data/venus-os-epever/driver/main.py

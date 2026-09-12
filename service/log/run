@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+mkdir -p /data/log/dbus-epever-tracer
+exec multilog t s99999 n10 /data/log/dbus-epever-tracer

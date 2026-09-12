@@ -1,5 +1,14 @@
 [epever]
+# USB/RS485 adapter connected to the Cerbo GX
 port = /dev/ttyUSB0
+# Default EPEVER Modbus address
 slave = 1
-poll_interval = 2
+# EPEVER Tracer AN is commonly 115200 8N1
 baudrate = 115200
+# Realtime poll interval
+poll_interval = 2
+# Slow statistical counters
+stats_interval = 60
+# Venus OS device instance
+# Avoid collisions with other solar chargers.
+device_instance = 30

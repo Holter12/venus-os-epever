@@ -13,7 +13,7 @@ def response(slave, values, function=3):
 
 def test_crc_known_request():
     frame = build_read_holding(1, 0x3100, 2)
-    assert frame.hex() == '010331000002c5c7'
+    assert frame.hex() == '010331000002caf7'
 
 
 def test_response_parse():

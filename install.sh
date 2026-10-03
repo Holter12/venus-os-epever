@@ -63,7 +63,7 @@ if ! grep -q "$MARK" /data/rc.local; then
     awk -v service="$SERVICE" -v root="$ROOT" '
         /^exit 0$/ {
             print "# venus-os-epever"
-            print "[ -L \"" service "\"] || ln -s \"" root "/service\" \"" service "\""
+            print "[ -L \"" service "\" ] || ln -s \"" root "/service\" \"" service "\""
         }
         { print }
     ' /data/rc.local > "$TMP_RC"

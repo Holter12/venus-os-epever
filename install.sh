@@ -12,8 +12,6 @@ if [ "$(id -u)" != 0 ]; then
     exit 1
 fi
 
-# Venus OS normally does not ship with git. Install from the GitHub source
-# archive instead of requiring a git clone.
 rm -rf "$TMP_DIR"
 mkdir -p "$TMP_DIR"
 
@@ -23,14 +21,12 @@ wget -O "$TMP_ARCHIVE" "$ARCHIVE_URL"
 echo "Extracting..."
 tar -xzf "$TMP_ARCHIVE" -C "$TMP_DIR"
 
-# GitHub archives contain a top-level directory named venus-os-epever-main.
 SRC="$TMP_DIR/venus-os-epever-main"
 if [ ! -d "$SRC" ]; then
     echo "Could not find extracted repository" >&2
     exit 1
 fi
 
-# Preserve a user-created configuration across upgrades.
 OLD_CONFIG=
 if [ -f "$ROOT/epever.conf" ]; then
     OLD_CONFIG=/tmp/epever.conf.preserve
@@ -59,7 +55,18 @@ fi
 
 MARK='# venus-os-epever'
 if ! grep -q "$MARK" /data/rc.local; then
-    sed -i "s|^exit 0$|# venus-os-epever\n[ -L '$SERVICE' ] || ln -s '$ROOT/service' '$SERVICE'\nexit 0|" /data/rc.local
+    # Avoid sed here: BusyBox sed treats the || characters in the
+    # replacement text as substitution delimiters.
+    TMP_RC=/tmp/rc.local.epever
+    awk -v service="$SERVICE" -v root="$ROOT" '
+        /^exit 0$/ {
+            print "# venus-os-epever"
+            print "[ -L \"" service "\" ] || ln -s \"" root "/service\" \"" service "\""
+        }
+        { print }
+    ' /data/rc.local > "$TMP_RC"
+    mv "$TMP_RC" /data/rc.local
+    chmod +x /data/rc.local
 fi
 
 rm -rf "$TMP_DIR" "$TMP_ARCHIVE" "$OLD_CONFIG"

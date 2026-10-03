@@ -22,7 +22,7 @@
 
 Pins 3/4 are RS485-B and pins 5/6 are RS485-A. For the point-to-point Cerbo connection, use only A and B at the isolated USB-RS485 adapter.
 
-**Do not connect the controller's +5 V pins to the USB-RS485 adapter.** The adapter is powered from the Cerbo USB port.
+Do not connect the controller's +5 V pins to the USB-RS485 adapter. The adapter is powered from the Cerbo USB port.
 
 ### Wiring
 
@@ -39,15 +39,35 @@ Use one twisted pair for A/B. The planned cable run is only about 15–30 cm alo
 
 ## Modbus RTU
 
-Initial configuration target:
+Hardware validation on a physical Cerbo GX MK2 + Tracer 2210AN confirmed:
 
-- Slave address: `1`
-- Baud rate: `115200`
-- Data bits: `8`
-- Parity: `None`
-- Stop bits: `1`
+- Device path: /dev/ttyUSB0
+- Slave address: 1
+- Baud rate: 115200
+- Format: 8N1
+- Realtime register block 0x3100..0x3111 responds to FC04 (Read Input Registers).
+- Battery SOC at 0x311A responds to FC04.
 
-All of these are configurable; validate the actual controller during the first hardware test.
+An FC03 request to the realtime block returned Modbus exception 2 (Illegal Data Address), while the same block returned valid data with FC04. The driver therefore uses FC04 explicitly for realtime telemetry.
+
+## Validated realtime register values
+
+The following mapping was confirmed on the physical controller:
+
+- 0x3100 = PV voltage, 0.01 V
+- 0x3101 = PV current, 0.01 A
+- 0x3102-0x3103 = PV power, 32-bit low/high, 0.01 W
+- 0x3104 = battery voltage, 0.01 V
+- 0x3105 = charge current, 0.01 A
+- 0x3106-0x3107 = charge power, 32-bit low/high, 0.01 W
+- 0x310C = load voltage, 0.01 V
+- 0x310D = load current, 0.01 A
+- 0x310E-0x310F = load power, 32-bit low/high, 0.01 W
+- 0x3110 = battery temperature, signed, 0.01 °C
+- 0x3111 = controller temperature, signed, 0.01 °C
+- 0x311A = battery SOC, 1 %
+
+Register 0x3112 (power-components temperature) is known from the register map but has not yet been hardware-validated in this project.
 
 ## Electrical notes
 
@@ -76,4 +96,4 @@ EPEVER Tracer 2210AN
 - EPEVER Tracer AN manual: https://www.epever.com/upload/file/2107/Tracer-AN-Manual-EN-V2.3_Software%20SV200.pdf
 - EPEVER documentation portal: https://pilot.epever.com/support/documents
 
-> Hardware-validation note: EPEVER has multiple Tracer revisions. Confirm the exact controller model/revision and connector documentation before wiring.
+> Hardware-validation note: the physical RS485/realtime path is validated, but D-Bus/GUI behaviour and status/energy reads still require separate hardware validation.

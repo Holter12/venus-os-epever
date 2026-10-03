@@ -82,7 +82,13 @@ class EpeverTracer:
         return parse_read_holding(bytes(response), self.slave, count, function)
 
     def read_realtime(self):
-        r = self.read_registers(0x3100, 28)
+        # Tracer 2210AN hardware validation showed that this realtime block
+        # responds to Modbus FC04 (Read Input Registers), not FC03.
+        #
+        # 0x3100..0x3111 is a contiguous 18-register block. SOC at 0x311A
+        # is outside that block and is therefore read separately.
+        r = self.read_registers(0x3100, 18, function=4)
+        soc = self.read_registers(0x311A, 1, function=4)[0]
         return {
             'pv_voltage': r[0] * 0.01,
             'pv_current': r[1] * 0.01,
@@ -95,8 +101,11 @@ class EpeverTracer:
             'load_power': u32(r[14], r[15]) * 0.01,
             'battery_temperature': s16(r[16]) * 0.01,
             'controller_temperature': s16(r[17]) * 0.01,
-            'power_components_temperature': s16(r[18]) * 0.01,
-            'battery_soc': r[26],
+            # 0x3112 is documented by EPEVER but was not included in the
+            # validated 18-register read, so do not report an unvalidated
+            # value here.
+            'power_components_temperature': None,
+            'battery_soc': soc,
             'battery_status': None,
             'charging_status': None,
         }

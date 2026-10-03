@@ -2,7 +2,7 @@
 
 Experimental Venus OS D-Bus driver for EPEVER Tracer AN MPPT solar charge controllers, initially targeting the Tracer 2210AN.
 
-> **Status: experimental. Hardware validation required.** This is an independent community project, not an official Victron Energy or EPEVER product.
+> **Status: experimental. Realtime Modbus communication is hardware-validated; D-Bus/GUI validation is still required.** This is an independent community project, not an official Victron Energy or EPEVER product.
 
 ## What it does
 
@@ -22,6 +22,14 @@ USB-RS485 adapter
         v
 Cerbo GX USB
 ```
+
+The physical Cerbo GX MK2 + Tracer 2210AN connection has been tested successfully at 115200 8N1, slave address 1, using Modbus FC04 for the validated realtime registers. The adapter appeared as `/dev/ttyUSB0`.
+
+## Current hardware finding
+
+The Tracer returned Modbus exception 2 (Illegal Data Address) when the realtime block at `0x3100` was requested with FC03. The same registers returned valid data with FC04. The driver therefore uses FC04 explicitly for realtime telemetry.
+
+A validated snapshot included 73.55 V PV voltage, 0.58 W PV power, 14.51 V battery voltage, 18.95 °C battery temperature, 24.32 °C controller temperature and 100 % SOC. These are measurements from one test, not fixed expected values.
 
 ## Repository layout
 

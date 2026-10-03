@@ -2,7 +2,7 @@
 set -eu
 
 ROOT=/data/venus-os-epever
-SERVICE=/opt/victronenergy/service/dbus-epever-tracer
+SERVICE=/service/dbus-epever-tracer
 ARCHIVE_URL=https://github.com/Holter12/venus-os-epever/archive/refs/heads/main.tar.gz
 TMP_ARCHIVE=/tmp/venus-os-epever-main.tar.gz
 TMP_DIR=/tmp/venus-os-epever-install
@@ -43,8 +43,10 @@ else
     cp "$ROOT/epever.conf.example" "$ROOT/epever.conf"
 fi
 
-chmod +x "$ROOT/install.sh" "$ROOT/uninstall.sh"     "$ROOT/service/run" "$ROOT/service/log/run" "$ROOT/tools/"*.py
+chmod +x "$ROOT/install.sh" "$ROOT/uninstall.sh" "$ROOT/service/run" "$ROOT/service/log/run" "$ROOT/tools/"*.py
 
+# runit scans /service, not /opt/victronenergy/service.
+# Keep the driver in /data and expose its service directory through /service.
 rm -f "$SERVICE"
 ln -s "$ROOT/service" "$SERVICE"
 
@@ -61,7 +63,7 @@ if ! grep -q "$MARK" /data/rc.local; then
     awk -v service="$SERVICE" -v root="$ROOT" '
         /^exit 0$/ {
             print "# venus-os-epever"
-            print "[ -L \"" service "\" ] || ln -s \"" root "/service\" \"" service "\""
+            print "[ -L \"" service "\"] || ln -s \"" root "/service\" \"" service "\""
         }
         { print }
     ' /data/rc.local > "$TMP_RC"
@@ -70,10 +72,6 @@ if ! grep -q "$MARK" /data/rc.local; then
 fi
 
 rm -rf "$TMP_DIR" "$TMP_ARCHIVE" "$OLD_CONFIG"
-
-if [ -x /usr/bin/sv ]; then
-    /usr/bin/sv up dbus-epever-tracer 2>/dev/null || true
-fi
 
 echo 'Installed venus-os-epever.'
 echo "Config: $ROOT/epever.conf"

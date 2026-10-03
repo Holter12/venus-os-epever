@@ -5,6 +5,8 @@ import os
 import signal
 import time
 
+from dbus.mainloop.glib import DBusGMainLoop
+
 from epever_modbus import EpeverTracer
 from dbus_service import EpeverDbusService
 
@@ -27,6 +29,7 @@ def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
+    DBusGMainLoop(set_as_default=True)
     cfg = load_config(os.environ.get('EPEVER_CONFIG', '/data/venus-os-epever/epever.conf'))
     port = cfg.get('port', '/dev/ttyUSB0')
     slave = int(cfg.get('slave', '1'))

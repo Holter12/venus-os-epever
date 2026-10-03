@@ -32,11 +32,23 @@ Preferred characteristics:
 
 The adapter does not need to power the EPEVER controller and should not be fed from the controller's RJ45 +5 V pins.
 
+## Validated Cerbo connection
+
+The physical connection has now been tested successfully with:
+- Cerbo GX MK2
+- isolated USB-RS485 adapter at /dev/ttyUSB0
+- EPEVER Tracer 2210AN, slave 1
+- 115200 8N1
+- Modbus FC04 for the realtime register block.
+
+The controller answered valid Modbus frames and returned the expected realtime measurements. An FC03 request to 0x3100 returned exception 2 (Illegal Data Address), so realtime reads in the driver use FC04.
+
 ## First hardware test
 
 1. Verify that the USB adapter enumerates on Venus OS.
-2. Run `tools/diagnose.py`.
+2. Run tools/diagnose.py.
 3. Confirm that the controller answers at the configured address and baud rate.
-4. Only after successful Modbus reads, enable the D-Bus service.
+4. Validate realtime values before enabling the D-Bus service.
+5. Validate the D-Bus service and GX GUI separately.
 
-See `docs/install.md` for the exact commands.
+See docs/install.md for the exact commands.
